@@ -1,4 +1,5 @@
 import re
+from typing import Literal
 from pydantic import BaseModel, Field, field_validator
 
 class UserBase(BaseModel):
@@ -6,7 +7,8 @@ class UserBase(BaseModel):
     first_name: str = Field(..., description = "Имя пользователя")
     middle_name: str | None = Field(None, description = "Отчество пользователя")
     iin: str = Field(..., description = "ИИН пользователя")
-    phone_number: str = Field(..., description = "Номер телефона пользователя")\
+    phone_number: str = Field(..., description = "Номер телефона пользователя")
+    photo: str | None = Field(None, description = "URL на фото пользователя")
     
     @field_validator('iin')
     def validate_iin(cls, v: str) -> str:
@@ -29,5 +31,18 @@ class User(UserBase):
     id: str = Field(..., description = "Уникальный идентификатор пользователя")
 
 
-class Message(BaseModel):
-    message: str = Field(..., description = "Модель для обычных сообщений")
+SUPPORTED_DOC_TYPES = Literal["pdf", "docx", "doc"]
+
+
+class DocumentRequest(BaseModel):
+    user_id: str
+    content_type: SUPPORTED_DOC_TYPES
+
+
+class AsyncDocumentRequest(DocumentRequest):
+    callback_url: str = Field(..., description="URL для отправки результата обработки документа")
+
+
+class DocumentResponse(BaseModel):
+    message: str
+    document_url: str | None = None

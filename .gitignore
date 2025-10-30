@@ -6,3 +6,4 @@ venv/
 *.pyc
 db.json
 .pytest_cache/
+README.md
