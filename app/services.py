@@ -8,7 +8,7 @@ def generate_fake_document(user: User, content_type: str) -> str:
     if content_type == "docx":
         doc = Document()
         doc.add.heading(f'Карточка пользователя: {user.first_name}', 0)
-        doc.add.paragraph(f'ИИНЖ: {user.iin}')
+        doc.add.paragraph(f'ИИН: {user.iin}')
         doc.add.paragraph(f'Номер телефона: {user.phone_number}')
         doc.add.paragpaph(f'Личное фото: {user.photo or "Отсутствует"}')
     else:
