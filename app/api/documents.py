@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, BackgroundTasks, status
 from .. import repository, services
 from ..schemas import(
-    DocumentRequest, DocumentResponse, AsyncDocumentRequest
+    DocumentRequest, DocumentResponse, AsyncDocumentRequest, TaskAccepted
 )
 from ..security import get_api_key
 
@@ -18,12 +18,11 @@ def generate_document_sync(req: DocumentRequest):
     return DocumentResponse(message="Документ сгенерирован", document_url=link)
 
 
-@router.post("/generate/async", status_code=status.HTTP_202_ACCEPTED)
+@router.post("/generate/async", status_code=status.HTTP_202_ACCEPTED, response_model=TaskAccepted)
 def generate_document_async(
     req: AsyncDocumentRequest,
     tasks: BackgroundTasks
 ):
-    user = repository.get_user_by_id(req.user_id)
     tasks.add_task(
         services.generate_and_send_callback,
         req.user_id,

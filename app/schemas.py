@@ -46,3 +46,7 @@ class AsyncDocumentRequest(DocumentRequest):
 class DocumentResponse(BaseModel):
     message: str
     document_url: str | None = None
+
+
+class TaskAccepted(BaseModel):
+    message: str

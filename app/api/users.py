@@ -10,7 +10,7 @@ router = APIRouter(
     dependencies=[Depends(get_api_key)],
 )
 
-@router.get("/", response_model=User, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=User, status_code=status.HTTP_201_CREATED)
 def create_user_(user: UserCreate):
     return repository.create_user(user)
 
@@ -21,12 +21,12 @@ def read_users(skip: int = 0, limit: int = Query(default=10, le=100)):
     return users
 
 
-@router.get("/{user_id}", response_class=User)
+@router.get("/{user_id}", response_model=User)
 def read_user(user_id: str):
     return repository.get_user_by_id(user_id)
 
 
-@router.get("{user_id}", response_model=User)
+@router.put("/{user_id}", response_model=User)
 def update_user_(user_id: str, user: UserCreate):
     return repository.update_user(user_id=user_id, user_update=user)
 
