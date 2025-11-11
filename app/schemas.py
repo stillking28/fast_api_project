@@ -27,6 +27,36 @@ class UserBase(BaseModel):
         return "".join(v.split())
 
 
+class UserUpdate(BaseModel):
+    last_name: str | None = Field(None, description="Фамилия пользователя")
+    first_name: str | None = Field(None, description="Имя пользователя")
+    middle_name: str | None = Field(None, description="Отчество пользователя")
+    iin: str | None = Field(None, description="ИИН пользователя")
+    phone_number: str | None = Field(None, description="Мобильный номер пользователя")
+    photo_url: str | None = Field(None, description="Личное фото пользователя")
+
+
+    @field_validator("iin")
+    @classmethod
+    def validate_iin(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+        if not v.isdigit() or len(v)!=12:
+            raise ValueError('ИИН должен состоять ровно из 12 цифр')
+        return v
+    
+
+    @field_validator("phone_number")
+    @classmethod
+    def validate_phone_number(cls, v: str | None) -> str | None:
+        if v is None:
+            return None
+        pattern = re.compile(r'^\+7\s?7\d{2}\s?\d{3}\s?\d{2}\s?\d{2}$')
+        if not pattern.match(v):
+            raise ValueError('Номер телефона должен быть в формате +77xxAAABBCC')
+        return "".join(v.split())
+
+
 class UserCreate(UserBase):
     pass
 

@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import APIRouter, Depends, status, Query
 from .. import repository
-from ..schemas import User, UserCreate
+from ..schemas import User, UserCreate, UserUpdate
 from ..security import get_api_key
 
 router = APIRouter(
@@ -28,7 +28,7 @@ def read_user(user_id: str):
 
 
 @router.put("/{user_id}", response_model=User)
-def update_user_(user_id: str, user: UserCreate):
+def update_user_(user_id: str, user: UserUpdate):
     return repository.update_user(user_id=user_id, user_update=user)
 
 
