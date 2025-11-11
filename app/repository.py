@@ -126,21 +126,23 @@ def update_user(user_id: str, user_update: UserCreate) -> User:
         check_q = client.query(
             "SELECT 1 FROM users WHERE (iin = %(iin)s OR phone_number = %(phone)s) AND id != %(id)s LIMIT 1",
             parameters={
-                'iin': update_data.get("iin", current_user.iin),
-                'phone': update_data.get("phone_number", current_user.phone_number),
-                'id': user_id   
-            }
+                "iin": update_data.get("iin", current_user.iin),
+                "phone": update_data.get("phone_number", current_user.phone_number),
+                "id": user_id,
+            },
         )
         if check_q.result_rows:
-            raise UserAlreadyExistsError(detail="Пользователь с таким ИИН или телефоном уже существует")
-    
+            raise UserAlreadyExistsError(
+                detail="Пользователь с таким ИИН или телефоном уже существует"
+            )
+
     set_clauses = [f"{key} = %({key})s" for key in update_data.keys()]
     query = f"""
         ALTER TABLE users
         UPDATE {', '.join(set_clauses)}
         WHERE id  = %(id)s
     """
-    update_data['id']=user_id
+    update_data["id"] = user_id
     client.command(query, parameters=update_data)
 
     updated_user = current_user.model_copy(update=update_data)
