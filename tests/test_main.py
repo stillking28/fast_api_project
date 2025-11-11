@@ -19,9 +19,9 @@ def cleanup_db():
         client = repository.get_clickhouse_client()
         client.command("TRUNCATE TABLE IF EXISTS users")
         yield
-    except Exception as e:
-        print(f"Ошибка настройки/очистки БД: {e}")
-        pytest.fail(f"Не удалось натсроить БД для теста:{e}")
+    finally:
+        if client:
+            client.command("TRUNCATE TABLE IF EXISTS users")
 
 
 def create_test_user(iin: str, phone_number: str):
