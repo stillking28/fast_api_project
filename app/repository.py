@@ -121,10 +121,3 @@ def update_user(user_id: str, user_update: UserCreate) -> User:
     client.command(query, parameters=update_data)
 
     return User(id=user_id, **user_update.model_dump())
-
-
-def delete_user(user_id:str):
-    client = get_clickhouse_client()
-    get_user_by_id(user_id)
-    query = "ALTER TABLE users DELETE WHERE id = %(id)s"
-    client.command(query, parameters={'id': user_id})

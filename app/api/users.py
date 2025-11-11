@@ -31,12 +31,6 @@ def update_user_(user_id: str, user: UserCreate):
     return repository.update_user(user_id=user_id, user_update=user)
 
 
-@router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_user_(user_id: str):
-    repository.delete_user(user_id=user_id)
-    return None
-
-
 @router.get("/search/", response_model=List[User])
 def search_users_(q: str = "", skip: int = 0, limit: int=Query(default=10, le=100)):
     users = repository.search_users(q=q, skip=skip, limit=limit)
