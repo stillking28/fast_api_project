@@ -6,7 +6,6 @@ from app.main import app
 from app.repository import DB_FILE
 
 client = TestClient(app)
-DB_FILE = "db.json"
 TEST_API_KEY = os.getenv("API_KEY")
 if not TEST_API_KEY:
     raise ValueError("Не найден API_KEY в переменных окружения для тестирования.")
@@ -28,7 +27,7 @@ def create_test_user(iin: str, phone_number: str):
         "first_name": "Тест",
         "middle_name": "Тестович",
         "iin": iin,
-        "phone_number": phone_number
+        "phone_number": phone_number,
     }
     response = client.post("/users/", json=user_data, headers=HEADERS)
     assert response.status_code == 201
@@ -56,7 +55,7 @@ def test_create_user_and_duplicate_error():
         "first_name": "Пользователь",
         "middle_name": "Другович",
         "iin": "050928300494",
-        "phone_number": "+7 707 765 43 21"
+        "phone_number": "+7 707 765 43 21",
     }
     response_iin = client.post("/users/", json=user_data_dup_iin, headers=HEADERS)
     assert response_iin.status_code == 400
@@ -92,7 +91,7 @@ def test_search_and_pagination():
     create_test_user("444444444444", "+7 707 444 44 44")
     user2 = create_test_user("555555555555", "+7 707 555 55 55")
     user2_id = user2["id"]
-    
+
     response_all = client.get("/users/search/?q=", headers=HEADERS)
     assert response_all.status_code == 200
     assert len(response_all.json()) == 2
@@ -119,8 +118,10 @@ def test_generate_async_doc():
     req_data = {
         "user_id": user["id"],
         "content_type": "docx",
-        "callback_url": "http://test.com/callback"
+        "callback_url": "http://test.com/callback",
     }
     response = client.post("/documents/generate/async/", json=req_data, headers=HEADERS)
     assert response.status_code == 202
-    assert response.json()["message"] == "Запрос на генерацию документа принят в обработку"
+    assert (
+        response.json()["message"] == "Запрос на генерацию документа принят в обработку"
+    )
