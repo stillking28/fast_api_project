@@ -2,6 +2,7 @@ import os
 import pytest
 from fastapi.testclient import TestClient
 from app.main import app
+from app import repository
 
 client = TestClient(app)
 TEST_API_KEY = os.getenv("API_KEY")
@@ -12,10 +13,10 @@ HEADERS = {"MY-API-KEY": TEST_API_KEY}
 
 @pytest.fixture(autouse=True)
 def cleanup_db():
-    from app.repository import get_clickhouse_client
-
     try:
-        client = get_clickhouse_client()
+        repository.create_table_if_not_exists()
+
+        client = repository.get_clickhouse_client()
         client.command("TRUNCATE TABLE IF EXISTS users")
         yield
     except Exception as e:
