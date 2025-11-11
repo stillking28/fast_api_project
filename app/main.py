@@ -1,4 +1,5 @@
 import logging
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from .api import api_router
@@ -10,16 +11,17 @@ logger = logging.getLogger(__name__)
 app = FastAPI()
 
 
-@app.on_event("startup")
-def on_startup():
+@asynccontextmanager
+async def lifespan(app: FastAPI):
     logger.info("Приложение запускается")
+
     try:
         repository.create_table_if_not_exists()
-        logger.info("Таблица пользователей готова к использованию")
+        logger.info("Таблица 'users' в ClickHouse готова")
     except Exception as e:
-        logger.error(
-            f"Ошибка: не удалось подключиться или создать таблицу в ClickHouse: {e}"
-        )
+        logger.error(f"Не удалось подключиться или создать таблицу в ClickHouse: {e}")
+    yield
+    logger.info("Приложение останавливается")
 
 
 @app.exception_handler(UserNotFoundError)

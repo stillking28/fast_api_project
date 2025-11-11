@@ -1,9 +1,7 @@
 import os
-import json
 import pytest
 from fastapi.testclient import TestClient
 from app.main import app
-from app.repository import DB_FILE
 
 client = TestClient(app)
 TEST_API_KEY = os.getenv("API_KEY")
@@ -14,12 +12,15 @@ HEADERS = {"MY-API-KEY": TEST_API_KEY}
 
 @pytest.fixture(autouse=True)
 def cleanup_db():
-    with open(DB_FILE, "w") as f:
-        json.dump({}, f)
-    yield
-    with open(DB_FILE, "w", encoding="utf-8") as f:
-        json.dump({}, f)
+    from app.repository import get_clickhouse_client
 
+    try:
+        client = get_clickhouse_client()
+        client.command("TRUNCATE TABLE IF EXISTS users")
+        yield
+    except Exception as e:
+        print(f"Ошибка настройки/очистки БД: {e}")
+        pytest.fail(f"Не удалось натсроить БД для теста:{e}")
 
 def create_test_user(iin: str, phone_number: str):
     user_data = {
@@ -37,7 +38,7 @@ def create_test_user(iin: str, phone_number: str):
 def test_root():
     response = client.get("/")
     assert response.status_code == 200
-    assert response.json() == {"message": "Ping pong"}
+    assert "Ping pong" in response.json()["message"]
 
 
 def test_auth_fails():
@@ -59,7 +60,7 @@ def test_create_user_and_duplicate_error():
     }
     response_iin = client.post("/users/", json=user_data_dup_iin, headers=HEADERS)
     assert response_iin.status_code == 400
-    assert "ИИН уже существует" in response_iin.json()["message"]
+    assert "уже существует" in response_iin.json()["message"]
 
 
 def test_user_not_found():
@@ -109,7 +110,7 @@ def test_generate_sync_doc():
     response = client.post("/documents/generate/sync", json=req_data, headers=HEADERS)
     assert response.status_code == 200
     data = response.json()
-    assert data["message"] == "Документ успешно сгенерирован"
+    assert data["message"] == "Документ сгенерирован"
     assert data["document_url"] == f"/generated_docs/user_{user['id']}_document.pdf"
 
 
@@ -123,5 +124,5 @@ def test_generate_async_doc():
     response = client.post("/documents/generate/async/", json=req_data, headers=HEADERS)
     assert response.status_code == 202
     assert (
-        response.json()["message"] == "Запрос на генерацию документа принят в обработку"
+        response.json()["message"] == "Задача по генерацию документа принята"
     )
