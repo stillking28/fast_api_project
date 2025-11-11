@@ -8,7 +8,7 @@ class UserBase(BaseModel):
     middle_name: str | None = Field(None, description = "Отчество пользователя")
     iin: str = Field(..., description = "ИИН пользователя")
     phone_number: str = Field(..., description = "Номер телефона пользователя")
-    photo: str | None = Field(None, description = "URL на фото пользователя")
+    photo_url: str | None = Field(None, description = "URL на фото пользователя")
     
     @field_validator('iin')
     def validate_iin(cls, v: str) -> str:

@@ -74,9 +74,9 @@ def create_user(user_create: UserCreate) -> User:
         new_user.last_name,
         new_user.first_name,
         new_user.middle_name,
-        new_user.iin,
         new_user.phone_number,
-        new_user.photo
+        new_user.iin,
+        new_user.photo_url
     )
     client.insert("users", [user_tuple])
     return new_user
@@ -120,11 +120,11 @@ def update_user(user_id: str, user_update: UserCreate) -> User:
     update_data['id'] = user_id
     client.command(query, parameters=update_data)
 
-    return User(id=user_id, **user_update.model_dump)
+    return User(id=user_id, **user_update.model_dump())
 
 
 def delete_user(user_id:str):
-    client = get_clickhouse_client
+    client = get_clickhouse_client()
     get_user_by_id(user_id)
     query = "ALTER TABLE users DELETE WHERE id = %(id)s"
     client.command(query, parameters={'id': user_id})
