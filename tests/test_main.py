@@ -22,6 +22,7 @@ def cleanup_db():
         print(f"Ошибка настройки/очистки БД: {e}")
         pytest.fail(f"Не удалось натсроить БД для теста:{e}")
 
+
 def create_test_user(iin: str, phone_number: str):
     user_data = {
         "last_name": "Тестов",
@@ -123,6 +124,4 @@ def test_generate_async_doc():
     }
     response = client.post("/documents/generate/async/", json=req_data, headers=HEADERS)
     assert response.status_code == 202
-    assert (
-        response.json()["message"] == "Задача по генерацию документа принята"
-    )
+    assert response.json()["message"] == "Задача по генерацию документа принята"

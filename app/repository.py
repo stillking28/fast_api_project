@@ -51,7 +51,7 @@ def get_user_by_id(user_id: str) -> User:
         raise UserNotFoundError(user_id=user_id)
     row = result.result_rows[0]
     column_names = result.column_names
-    user_dict = dict(zip(column_names,row))
+    user_dict = dict(zip(column_names, row))
     return User(**user_dict)
 
 
@@ -108,11 +108,7 @@ def search_users(q: str, skip: int = 0, limit: int = 10) -> List[User]:
         ORDER BY id
         LIMIT %(limit)s OFFSET %(skip)s
     """
-    params = {
-        'q_like': q,
-        'limit': limit,
-        'skip': skip
-    }
+    params = {"q_like": q, "limit": limit, "skip": skip}
 
     query = query.replace("%(q_like)s", "concat('%%', %(q_like)s, '%%')")
     result = client.query(query, parameters=params)
@@ -140,4 +136,4 @@ def delete_user(user_id: str):
     client = get_clickhouse_client()
     get_user_by_id(user_id)
     query = "ALTER TABLE users DELETE WHERE id=%(id)s"
-    client.command(query, parameters={'id': user_id})
+    client.command(query, parameters={"id": user_id})
