@@ -11,17 +11,17 @@ app = FastAPI()
 def get_clickhouse_client():
     return clickhouse_connect.get_client(
         host=os.getenv("CLICKHOUSE_HOST", "localhost"),
-        port=int(os.getenv("CLICKHOUSE_PORT", 6379)),
+        port=int(os.getenv("CLICKHOUSE_PORT", 8123)),
         user=os.getenv("CLICKHOUSE_USER", "default"),
         password=os.getenv("CLICKHOUSE_PASSWORD", ""),
     )
 
 
-@app.get("admin/logs")
+@app.get("/admin/logs")
 def get_generation_logs(limit: int = 50):
     try:
         client = get_clickhouse_client()
-        query = "SELECT FROM generation_logs ORDER BY request_time DESC LIMIT %(limit)s"
+        query = "SELECT * FROM generation_logs ORDER BY request_time DESC LIMIT %(limit)s"
         result = client.query(query, parameters={"limit": limit})
 
         column_names = result.column_names

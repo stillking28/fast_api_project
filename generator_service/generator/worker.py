@@ -44,7 +44,7 @@ def update_log(request_id: str, status: str, duration_ms: int, result_url: str):
                 "duration_ms": duration_ms,
                 "result_url": result_url,
                 "id": request_id,
-            },
+            }
         )
         logger.info(f"Лог для {request_id} обновлен в ClickHouse")
     except Exception as e:
@@ -121,4 +121,5 @@ async def main_loop():
 
 
 if __name__ == "__main__":
+    
     asyncio.run(main_loop())
