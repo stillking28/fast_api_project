@@ -109,7 +109,7 @@ async def main_loop():
             if tasks_to_process:
                 logger.info(f"Найдено {len(tasks_to_process)} задач")
                 for t in tasks_to_process:
-                    redis_conn.set(f"{t}_processing, 1 , ex=60")
+                    redis_conn.set(f"{t}_processing", 1 , ex=60)
                 for key in tasks_to_process:
                     await process_task(redis_conn, get_clickhouse_client(), key)
         except redis.exceptions.ConnectionError:
