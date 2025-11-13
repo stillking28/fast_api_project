@@ -1,10 +1,12 @@
 import os
 import logging
-from typing import List
+import uuid
+from typing import List, Dict
 import clickhouse_connect
 from clickhouse_connect.driver.client import Client
 from .schemas import User, UserCreate, UserUpdate
 from .exceptions import UserNotFoundError, UserAlreadyExistsError
+from datetime import datetime
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +40,21 @@ def create_table_if_not_exists():
             photo_url Nullable(String)
         ) ENGINE = MergeTree()
         ORDER BY id
+    """
+    )
+    client.command(
+        """
+        CREATE TABLE IF NOT EXISTS(
+            request_id string,
+            user_id string,
+            doc_type string,
+            status string,
+            request_time DateTime,
+            duration_ms Nullable(Int32)
+            request_body string,
+            result_url Nullable(String)
+        )ENGINE = MergeTree()
+        ORDER BY request_time
     """
     )
 
@@ -155,3 +172,20 @@ def delete_user(user_id: str):
     get_user_by_id(user_id)
     query = "ALTER TABLE users DELETE WHERE id=%(id)s"
     client.command(query, parameters={"id": user_id})
+
+
+def log_generation_request(
+    request_id: uuid.UUID, user_id: str, doc_type: str, request_body: str
+):
+    client = get_clickhouse_client()
+    log_entry = {
+        "request_id": str(request_id),
+        "user_id": user_id,
+        "doc_type": doc_type,
+        "status": "PENDING",
+        "request_time": datetime.now(),
+        "duration_ms": None,
+        "request_body": request_body,
+        "result_url": None,
+    }
+    client.insert("generation_logs", [list(log_entry.values())])

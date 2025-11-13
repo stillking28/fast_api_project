@@ -4,9 +4,25 @@ on:
   pull_request:
 
 jobs:
-  build-and-test:
+  test:
     runs-on: ubuntu-latest
-
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+      clickhouse:
+        image: clickhouse/clickhouse-server:latest
+        ports:
+        - 8123:8123
+        env:
+          CLIKCHOUSE_USER: default
+          CLICKHOUSE_PASSWORD: 1234
+        options: >-
+          --health-cmd "wget --spider -q 'https://default:1234@localhost:8123/ping'"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -17,12 +33,13 @@ jobs:
       - name: Install Poetry
         run: |
           curl -sSl https://install.python-poetry.org | python3 -
-      - name: Install dependencies
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+      - name: User API Install dependencies
         run: |
           poetry install --with dev
-      - name: Run Flake8 Linter
+      - name: User API Run Flake8 Linter
         run: |
-          poetry run flake8 . --count --show-source --statistics --max-line-length=88
+          poetry run black . --check
       - name: Run Pytest
         run: |
           echo "API_KEY=test_key" > .env
@@ -37,3 +54,7 @@ jobs:
           sleep 15
 
           poetry run pytest
+      - name: Generator Install Dependencies
+        run: cd generator_service && poetry install --with dev
+      - name: Generator Run Flake8
+        run: poetry run black ./generator_service --check

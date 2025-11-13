@@ -15,15 +15,37 @@ services:
       interval: 3s
       timeout: 5s
       retries: 10
+  redis:
+    image: redis:7-alpine
+    container_name: redis-broker
+    ports:
+    - 6379:6379
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: fastapi_app
     ports:
       - "8000:8000"
     depends_on:
       clickhouse:
         condition: service_healthy
+      redis:
+        condition: service_started
     env_file:
       - .env
+  generator:
+    build:
+      context: ./generator_service
+      dockerfile: Dockerfile
+    container_name: generator-service
+    depends_on:
+      clickhouse:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    env_file:
+      - .env
+    command: sh -c "poetry run uvicorn generator.main:app --host 0.0.0.0 --port 8001 & poetry run python generator/worker.py"
 volumes:
   clickhouse_data:
