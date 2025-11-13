@@ -84,7 +84,7 @@ async def process_task(redis_conn, ch_client, key: str):
         status = "FAILED"
         result_payload = {"error": str(e), "status": "failed"}
 
-    duration_ms = int((time.time() - start_time()) * 1000)
+    duration_ms = int((time.time() - start_time) * 1000)
 
     asyncio.create_task(send_callback(callback_url, result_payload))
     update_log(request_id, status, duration_ms, doc_url)
