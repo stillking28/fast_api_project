@@ -44,7 +44,7 @@ def create_table_if_not_exists():
     )
     client.command(
         """
-        CREATE TABLE IF NOT EXISTS(
+        CREATE TABLE IF NOT EXISTS generation_logs(
             request_id string,
             user_id string,
             doc_type string,
