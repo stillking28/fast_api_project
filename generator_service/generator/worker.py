@@ -32,17 +32,17 @@ def update_log(request_id: str, status: str, duration_ms: int, result_url: str):
         query = f"""
             ALTER TABLE generation_logs
             UPDATE
-                status=%(status)s
-                duration_ms=%(duration_ms)s
-                result_url=%(_url)s
+                status=%(status)s,
+                duration_ms=%(duration_ms)s,
+                result_url=%(result_url)s
             WHERE request_id=%(id)s
         """
         client.command(
             query,
             parameters={
                 "status": status,
-                "duration": duration_ms,
-                "url": result_url,
+                "duration_ms": duration_ms,
+                "result_url": result_url,
                 "id": request_id,
             },
         )
@@ -103,9 +103,10 @@ async def main_loop():
             tasks = redis_conn.keys("*_*")
             tasks_to_process = []
             for t in tasks:
-                if not t.endswith("_result"):
-                    if not redis_conn.exists(f"{t}_processing"):
-                        tasks_to_process.append(t)
+                if t.endswith("_result") or t.endswith("_processing"):
+                    continue
+                if not redis_conn.exists(f"{t}_processing"):
+                    tasks_to_process.append(t)
             if tasks_to_process:
                 logger.info(f"Найдено {len(tasks_to_process)} задач")
                 for t in tasks_to_process:
