@@ -50,7 +50,7 @@ def create_table_if_not_exists():
             doc_type string,
             status string,
             request_time DateTime,
-            duration_ms Nullable(Int32)
+            duration_ms Nullable(Int32),
             request_body string,
             result_url Nullable(String)
         )ENGINE = MergeTree()
