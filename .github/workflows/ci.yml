@@ -16,7 +16,6 @@ jobs:
         ports:
         - 8123:8123
         env:
-          CLIKCHOUSE_USER: default
           CLICKHOUSE_PASSWORD: 1234
         options: >-
           --health-cmd "wget --spider -q 'https://default:1234@localhost:8123/ping'"
