@@ -23,6 +23,7 @@ def generate_fake_document(user_data: dict, content_type: str) -> str:
     fake_url = f"/generated_docs/{fake_filename}"
 
     logger.info(f"Завершил генерацию для {user_name}. Ссылка: {fake_url}")
+    return fake_url
 
 
 async def send_callback(callback_url: str, payload: dict):

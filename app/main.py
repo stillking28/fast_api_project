@@ -8,7 +8,6 @@ from . import repository
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-app = FastAPI()
 
 
 @asynccontextmanager
@@ -17,11 +16,14 @@ async def lifespan(app: FastAPI):
 
     try:
         repository.create_table_if_not_exists()
-        logger.info("Таблица 'users' в ClickHouse готова")
+        logger.info("Таблицы 'users' и 'generation_logs' в ClickHouse готова")
     except Exception as e:
         logger.error(f"Не удалось подключиться или создать таблицу в ClickHouse: {e}")
     yield
     logger.info("Приложение останавливается")
+
+
+app = FastAPI(lifespan=lifespan)
 
 
 @app.exception_handler(UserNotFoundError)

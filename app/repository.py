@@ -45,13 +45,13 @@ def create_table_if_not_exists():
     client.command(
         """
         CREATE TABLE IF NOT EXISTS generation_logs(
-            request_id string,
-            user_id string,
-            doc_type string,
-            status string,
+            request_id String,
+            user_id String,
+            doc_type String,
+            status String,
             request_time DateTime,
             duration_ms Nullable(Int32),
-            request_body string,
+            request_body String,
             result_url Nullable(String)
         )ENGINE = MergeTree()
         ORDER BY request_time
