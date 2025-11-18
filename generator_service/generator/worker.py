@@ -44,7 +44,7 @@ def update_log(request_id: str, status: str, duration_ms: int, result_url: str):
                 "duration_ms": duration_ms,
                 "result_url": result_url,
                 "id": request_id,
-            }
+            },
         )
         logger.info(f"Лог для {request_id} обновлен в ClickHouse")
     except Exception as e:
@@ -110,7 +110,7 @@ async def main_loop():
             if tasks_to_process:
                 logger.info(f"Найдено {len(tasks_to_process)} задач")
                 for t in tasks_to_process:
-                    redis_conn.set(f"{t}_processing", 1 , ex=60)
+                    redis_conn.set(f"{t}_processing", 1, ex=60)
                 for key in tasks_to_process:
                     await process_task(redis_conn, get_clickhouse_client(), key)
         except redis.exceptions.ConnectionError:
@@ -121,5 +121,5 @@ async def main_loop():
 
 
 if __name__ == "__main__":
-    
+
     asyncio.run(main_loop())

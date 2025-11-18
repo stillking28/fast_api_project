@@ -19,7 +19,7 @@ services:
     image: redis:7-alpine
     container_name: redis-broker
     ports:
-    - 6379:6379
+    - "6379:6379"
   app:
     build:
       context: .
@@ -34,13 +34,20 @@ services:
         condition: service_started
     env_file:
       - .env
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://localhost:8000/"]
+      interval: 3s
+      timeout: 5s
+      retries: 10
   generator:
     build:
       context: ./generator_service
       dockerfile: Dockerfile
     container_name: generator-service
+    ports:
+      - "8001:8001"
     depends_on:
-      clickhouse:
+      app:
         condition: service_healthy
       redis:
         condition: service_started

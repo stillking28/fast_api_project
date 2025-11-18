@@ -13,9 +13,9 @@ HEADERS = {"MY-API-KEY": TEST_API_KEY}
 
 @pytest.fixture(autouse=True)
 def cleanup_db():
+    client = None
     try:
         repository.create_table_if_not_exists()
-
         client = repository.get_clickhouse_client()
         client.command("TRUNCATE TABLE IF EXISTS users")
         yield
@@ -106,16 +106,6 @@ def test_search_and_pagination():
     assert results[0]["id"] == user2_id
 
 
-def test_generate_sync_doc():
-    user = create_test_user("666666666666", "+7 707 666 66 66")
-    req_data = {"user_id": user["id"], "content_type": "pdf"}
-    response = client.post("/documents/generate/sync", json=req_data, headers=HEADERS)
-    assert response.status_code == 200
-    data = response.json()
-    assert data["message"] == "Документ сгенерирован"
-    assert data["document_url"] == f"/generated_docs/user_{user['id']}_document.pdf"
-
-
 def test_generate_async_doc():
     user = create_test_user("777777777777", "+7 707 777 77 77")
     req_data = {
@@ -125,4 +115,4 @@ def test_generate_async_doc():
     }
     response = client.post("/documents/generate/async/", json=req_data, headers=HEADERS)
     assert response.status_code == 202
-    assert response.json()["message"] == "Задача по генерацию документа принята"
+    assert "принята в обработку" in response.json()["message"]

@@ -21,7 +21,9 @@ def get_clickhouse_client():
 def get_generation_logs(limit: int = 50):
     try:
         client = get_clickhouse_client()
-        query = "SELECT * FROM generation_logs ORDER BY request_time DESC LIMIT %(limit)s"
+        query = (
+            "SELECT * FROM generation_logs ORDER BY request_time DESC LIMIT %(limit)s"
+        )
         result = client.query(query, parameters={"limit": limit})
 
         column_names = result.column_names
