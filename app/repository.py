@@ -189,3 +189,5 @@ def log_generation_request(
         "result_url": None,
     }
     client.insert("generation_logs", [list(log_entry.values())])
+
+
