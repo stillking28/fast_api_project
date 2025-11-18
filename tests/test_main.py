@@ -13,9 +13,9 @@ HEADERS = {"MY-API-KEY": TEST_API_KEY}
 
 @pytest.fixture(autouse=True)
 def cleanup_db():
+    client = None
     try:
         repository.create_table_if_not_exists()
-
         client = repository.get_clickhouse_client()
         client.command("TRUNCATE TABLE IF EXISTS users")
         yield
@@ -115,4 +115,4 @@ def test_generate_async_doc():
     }
     response = client.post("/documents/generate/async/", json=req_data, headers=HEADERS)
     assert response.status_code == 202
-    assert response.json()["message"] == "Задача по генерацию документа принята"
+    assert "принята в обработку" in response.json()["message"]
