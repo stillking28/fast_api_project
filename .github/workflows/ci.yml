@@ -18,7 +18,7 @@ jobs:
         env:
           CLICKHOUSE_PASSWORD: 1234
         options: >-
-          --health-cmd "wget --spider -q 'https://default:1234@localhost:8123/ping'"
+          --health-cmd "wget --spider -q 'http://default:1234@localhost:8123/ping'"
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
@@ -43,14 +43,11 @@ jobs:
         run: |
           echo "API_KEY=test_key" > .env
           echo "CLICKHOUSE_HOST=localhost" >> .env
-          echo "CLICKHOOUSE_PORT=8123" >> .env
-          echo "CLIKCHOUSE_USER=default" >> .env
+          echo "CLICKHOUSE_PORT=8123" >> .env
+          echo "CLICKHOUSE_USER=default" >> .env
           echo "CLICKHOUSE_PASSWORD=1234" >> .env
-
-          docker compose up -d clickhouse
-
-          echo "Ждем запуска ClickHouse..."
-          sleep 15
+          echo "REDIS_HOST=localhost" >> .env
+          echo "REDIS_PORT=6379" >> .env
 
           poetry run pytest
       - name: Generator Install Dependencies
