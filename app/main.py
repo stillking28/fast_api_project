@@ -40,8 +40,3 @@ async def user_already_exists_handler(request: Request, exc: UserAlreadyExistsEr
 
 
 app.include_router(api_router)
-
-
-@app.get("/", tags=["Root"])
-def read_root():
-    return {"message": "Ping pong"}
