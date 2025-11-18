@@ -51,49 +51,6 @@ def update_log(request_id: str, status: str, duration_ms: int, result_url: str):
         logger.error(f"Не удалось обновить лог для {request_id}: {e}")
 
 
-async def process_task(redis_conn, ch_client, key: str):
-    logger.info(f"Найдена задача: {key}")
-    try:
-        request_id, doc_type = key.split("_")
-    except ValueError:
-        logger.warning(f"Неверный формат ключа: {key}. Удаляю")
-        redis_conn.delete(key)
-        return
-    raw_data = redis_conn.get(key)
-    if not raw_data:
-        logger.warning(f"Ключ {key} есть, но данных нет. Удаляю")
-        redis_conn.delete(key)
-        return
-    try:
-        data = json.loads(raw_data)
-        user_data = data["user_data"]
-        callback_url = data["callback_url"]
-    except (json.JSONDecodeError, KeyError) as e:
-        logger.error(f"Неверный формат json в {key}. Удаляю")
-        redis_conn.delete(key)
-        return
-    start_time = time.time()
-
-    try:
-        doc_url = generate_fake_document(user_data, doc_type)
-        status = "COMPLETED"
-        result_payload = {"url": doc_url, "doc_type": doc_type, "status": "success"}
-    except Exception as e:
-        logger.error(f"Ошибка генерации документа для {key}: {e}")
-        doc_url = None
-        status = "FAILED"
-        result_payload = {"error": str(e), "status": "failed"}
-
-    duration_ms = int((time.time() - start_time) * 1000)
-
-    asyncio.create_task(send_callback(callback_url, result_payload))
-    update_log(request_id, status, duration_ms, doc_url)
-    result_key = f"{key}_result"
-    redis_conn.set(result_key, json.dumps(result_payload), ex=3600)
-    redis_conn.delete(key)
-    logger.info(f"Задача {key} завершена за {duration_ms} мс")
-
-
 async def main_loop():
     logger.info(f"Воркер генератора запускается...")
     redis_conn = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
