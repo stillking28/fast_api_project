@@ -1,7 +1,7 @@
 import os
 import logging
 import uuid
-from typing import List, Dict
+from typing import List
 import clickhouse_connect
 from clickhouse_connect.driver.client import Client
 from .schemas import User, UserCreate, UserUpdate
@@ -133,7 +133,7 @@ def search_users(q: str, skip: int = 0, limit: int = 10) -> List[User]:
     return [User(**dict(zip(column_names, row))) for row in result.result_rows]
 
 
-def update_user(user_id: str, user_update: UserCreate) -> User:
+def update_user(user_id: str, user_update: UserUpdate) -> User:
     client = get_clickhouse_client()
     current_user = get_user_by_id(user_id)
     update_data = user_update.model_dump(exclude_unset=True)
@@ -141,7 +141,9 @@ def update_user(user_id: str, user_update: UserCreate) -> User:
         return current_user
     if "iin" in update_data or "phone_number" in update_data:
         check_q = client.query(
-            "SELECT 1 FROM users WHERE (iin = %(iin)s OR phone_number = %(phone)s) AND id != %(id)s LIMIT 1",
+            "SELECT 1 FROM users"
+            "WHERE (iin = %(iin)s OR phone_number = %(phone)s) AND id != %(id)s"
+            "LIMIT 1",
             parameters={
                 "iin": update_data.get("iin", current_user.iin),
                 "phone": update_data.get("phone_number", current_user.phone_number),

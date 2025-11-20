@@ -1,8 +1,6 @@
-from fastapi import APIRouter, Depends, BackgroundTasks, status, HTTPException
+from fastapi import APIRouter, Depends, status, HTTPException
 from .. import repository
 from ..schemas import (
-    DocumentRequest,
-    DocumentResponse,
     AsyncDocumentRequest,
     TaskAccepted,
 )

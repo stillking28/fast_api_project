@@ -38,7 +38,7 @@ jobs:
           poetry install --with dev
       - name: User API Run Flake8 Linter
         run: |
-          poetry run black . --check
+          poetry run flake8 . --count --show-source --statistics --max-line-length=88
       - name: Run Pytest
         run: |
           echo "API_KEY=test_key" > .env
@@ -53,4 +53,4 @@ jobs:
       - name: Generator Install Dependencies
         run: cd generator_service && poetry install --with dev
       - name: Generator Run Flake8
-        run: poetry run black ./generator_service --check
+        run: poetry run flake8 ./generator_service/generator --count --show-source --statistics --max-line-length=88

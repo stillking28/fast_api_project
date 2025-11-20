@@ -1,12 +1,10 @@
 import os
 import time
 import json
-import uuid
 import asyncio
 import logging
 import redis
 import clickhouse_connect
-from datetime import datetime
 from core import generate_fake_document, send_callback
 
 logging.basicConfig(level=logging.INFO)
@@ -29,7 +27,7 @@ def get_clickhouse_client():
 def update_log(request_id: str, status: str, duration_ms: int, result_url: str):
     try:
         client = get_clickhouse_client()
-        query = f"""
+        query = """
             ALTER TABLE generation_logs
             UPDATE
                 status=%(status)s,
@@ -46,7 +44,7 @@ def update_log(request_id: str, status: str, duration_ms: int, result_url: str):
                 "id": request_id,
             },
         )
-        logger.info(f"Лог для {request_id} обновлен в ClickHouse")
+        logger.info("Лог для {request_id} обновлен в ClickHouse")
     except Exception as e:
         logger.error(f"Не удалось обновить лог для {request_id}: {e}")
 
@@ -69,7 +67,7 @@ async def process_task(redis_conn, ch_client, key: str):
         user_data = data["user_data"]
         callback_url = data["callback_url"]
     except (json.JSONDecodeError, KeyError) as e:
-        logger.error(f"Неверный формат json в {key}. Удаляю")
+        logger.error(f"Неверный формат json в {key}: {e}. Удаляю")
         redis_conn.delete(key)
         return
     start_time = time.time()
@@ -95,7 +93,7 @@ async def process_task(redis_conn, ch_client, key: str):
 
 
 async def main_loop():
-    logger.info(f"Воркер генератора запускается...")
+    logger.info("Воркер генератора запускается...")
     redis_conn = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True)
 
     while True:
@@ -114,7 +112,7 @@ async def main_loop():
                 for key in tasks_to_process:
                     await process_task(redis_conn, get_clickhouse_client(), key)
         except redis.exceptions.ConnectionError:
-            logger.error(f"Не удалось подключиться к Redis, повторо через 5 секунд")
+            logger.error("Не удалось подключиться к Redis, повторо через 5 секунд")
         except Exception as e:
             logger.error(f"Неизвестная ошибка в цикле:{e}")
         await asyncio.sleep(POLL_INTERVAL)
