@@ -19,7 +19,43 @@ services:
     image: redis:7-alpine
     container_name: redis-broker
     ports:
-    - "6379:6379"
+      - "6379:6379"
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka
+    ports:
+      - "9092:9092"
+    environment:
+      CLUSTER_ID: ULngVDXbmibu0mc9GTGzfQ
+      KAFKA_BROKER_ID: 1
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "kafka:9092"]
+      interval: 10s
+      timeout: 10s
+      retries: 5
+  kafka-ui:
+    image: provectuslabs/kafka-ui:v0.7.1
+    container_name: kafka-ui
+    ports:
+      - "8080:8080"
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+      - KAFKA_CLUSTERS_0_PROPERTIES_SECURITY_PROTOCOL=PLAINTEXT
+      - LOGGING_LEVEL_ROOT=DEBUG
+    depends_on:
+      kafka:
+        condition: service_healthy
   app:
     build:
       context: .
@@ -32,6 +68,8 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+      kafka:
+        condition: service_healthy
     env_file:
       - .env
     healthcheck:
@@ -51,8 +89,15 @@ services:
         condition: service_healthy
       redis:
         condition: service_started
+      kafka:
+        condition: service_healthy
     env_file:
       - .env
-    command: sh -c "poetry run uvicorn generator.main:app --host 0.0.0.0 --port 8001 & poetry run python generator/worker.py"
+    command: >
+      sh -c "poetry run uvicorn generator.main:app --host 0.0.0.0 --port 8001 &
+             poetry run python generator/worker.py"
+
 volumes:
   clickhouse_data:
+  kafka_data:
+  zookeeper_data:
